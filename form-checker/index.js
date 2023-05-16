@@ -1,8 +1,10 @@
+const form = document.querySelector("form");
 const inputs = document.querySelectorAll(
   'input[type="text"], input[type="password"]'
 );
 
 let pseudo, email, password, confirmPass;
+const progressBar = document.getElementById("progress-bar");
 
 const errorDisplay = (tag, message, valid) => {
   const container = document.querySelector("." + tag + "-container");
@@ -37,15 +39,44 @@ const emailChecker = (value) => {
   if (!value.match(/^[\w_-]+@[\w-]+\.[a-z]{2,4}$/i)) {
     errorDisplay("email", "Le mail n'est pas valide");
     email = null;
+  } else {
+    errorDisplay("email", "", true);
+    email = value;
   }
 };
 
 const passwordChecker = (value) => {
-  console.log(value);
+  if (
+    !value.match(
+      /^(?=.*?[A-Z])(?=(.*[a-z]){1,})(?=(.*[\d]){1,})(?=(.*[\W]){1,})(?!.*\s).{8,}$/
+    )
+  ) {
+    errorDisplay(
+      "password",
+      "8 caracteres au minimum, une majuscule et un caractere special"
+    );
+    progressBar.classList.add("progressRed");
+    password = null;
+  } else if (value.length < 12) {
+    progressBar.classList.add("progressBlue");
+    errorDisplay("password", "", true);
+    password = value;
+  } else {
+    progressBar.classList.add("progressGreen");
+    errorDisplay("password", "", true);
+    password = value;
+  }
+  if (confirmPass) confirmChecker(confirmPass);
 };
 
 const confirmChecker = (value) => {
-  console.log(value);
+  if (value !== password) {
+    errorDisplay("confirm", "Les mots de passe ne correspondent pas");
+    confirmPass = false;
+  } else {
+    errorDisplay("confirm", "", true);
+    confirmPass = true;
+  }
 };
 
 inputs.forEach((input) => {
@@ -58,13 +89,37 @@ inputs.forEach((input) => {
         emailChecker(e.target.value);
         break;
       case "password":
-        passwordChecker();
+        passwordChecker(e.target.value);
         break;
       case "confirm":
-        confirmChecker();
+        confirmChecker(e.target.value);
         break;
       default:
         null;
     }
   });
+});
+
+form.addEventListener("submit", (e) => {
+  e.preventDefault();
+
+  if (pseudo && email && password && confirmPass) {
+    const data = {
+      pseudo: pseudo,
+      email: email,
+      password: password,
+    };
+    console.log(data);
+
+    inputs.forEach((input) => (input.value = ""));
+    progressBar.classList = "";
+
+    pseudo = null;
+    email = null;
+    password = null;
+    confirmPass = null;
+    alert("Inscription validee !");
+  } else {
+    alert("Veuiller remplir correctement les champs");
+  }
 });
